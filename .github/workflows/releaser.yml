@@ -71,11 +71,18 @@ jobs:
           # Reset b's manifest entry to the latest released version of b
           LATEST_B_TAG=$(git tag --list 'b/v*' --sort=-v:refname | head -n1)
           LATEST_B_VERSION=${LATEST_B_TAG#b/v}
+          echo "[debug] a version: ${{ needs.package-a.outputs.version }}"
+          echo "[debug] LATEST_B_TAG=$LATEST_B_TAG"
+          echo "[debug] LATEST_B_VERSION=$LATEST_B_VERSION"
+          echo "[debug] manifest before:"
+          cat .release-please-manifest.json
           if [ -n "$LATEST_B_VERSION" ]; then
             node -e "
               const fs = require('fs');
+              console.log('[debug] node manifest before:', fs.readFileSync('.release-please-manifest.json', 'utf8'));
               const m = JSON.parse(fs.readFileSync('.release-please-manifest.json', 'utf8'));
               m.b = '$LATEST_B_VERSION';
+              console.log('[debug] node writing b =', m.b);
               fs.writeFileSync('.release-please-manifest.json', JSON.stringify(m, null, '\t') + '\n');
             "
           fi
