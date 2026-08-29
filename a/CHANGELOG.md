@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/Unbreathable/staggered/compare/a/v1.4.0...a/v1.5.0) (2026-08-29)
+
+
+### Features
+
+* our biggest innovation yet ([6c350dd](https://github.com/Unbreathable/staggered/commit/6c350dd3f330c4c088e05c1078a4295efe3d1fef))
+
 ## [1.4.0](https://github.com/Unbreathable/staggered/compare/a/v1.3.0...a/v1.4.0) (2026-08-29)
 
 
