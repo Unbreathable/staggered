@@ -5,7 +5,7 @@ replace github.com/Unbreathable/staggered/a => ../a
 go 1.27.0
 
 require (
-	github.com/Unbreathable/staggered/a v1.9.0
+	github.com/Unbreathable/staggered/a v1.10.0
 	github.com/stretchr/testify v1.12.1
 )
 
