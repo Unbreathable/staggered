@@ -1,0 +1,58 @@
+name: Detect MR merge
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Method 1 - commit message regex (merge commit only)
+        id: method1
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          if [[ "$MSG" =~ ^Merge\ pull\ request ]]; then
+            echo "result=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Method 2 - parent commit count (merge commit only)
+        id: method2
+        run: |
+          if [ $(git rev-list --parents -n 1 HEAD | wc -w) -gt 2 ]; then
+            echo "result=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Method 3 - github.event.head_commit.message (merge commit only)
+        id: method3
+        run: |
+          if [[ "${{ github.event.head_commit.message }}" =~ ^Merge\ pull\ request ]]; then
+            echo "result=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Method 4 - PR number in message (squash merge)
+        id: method4
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          if [[ "$MSG" =~ \(#[0-9]+\)$ ]]; then
+            echo "result=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summary
+        run: |
+          echo "Method 1 (commit message): ${{ steps.method1.outputs.result }}"
+          echo "Method 2 (parent count):   ${{ steps.method2.outputs.result }}"
+          echo "Method 3 (event message):  ${{ steps.method3.outputs.result }}"
+          echo "Method 4 (squash / #N):    ${{ steps.method4.outputs.result }}"

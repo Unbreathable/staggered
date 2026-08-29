@@ -1,0 +1,114 @@
+name: Releaser
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge-checker:
+    runs-on: ubuntu-latest
+    outputs:
+      merge-commit: ${{ steps.merge-commit.outputs.result }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect if merge commit
+        id: merge-commit
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          if [[ "$MSG" =~ ^Merge\ pull\ request ]]; then
+            echo "result=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Builds package a, first thing in tree
+  package-a:
+    needs: merge-checker
+    if: needs.merge-checker.outputs.merge-commit == 'true'
+    outputs:
+      releases-created: ${{ steps.release.outputs.releases_created }}
+      version: ${{ steps.release.outputs.a--version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          path: a
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Wait for the package to be available
+      - name: Wait for module on Go proxy
+        env:
+          MODULE: github.com/Unbreathable/staggerd/a
+          VERSION: ${{ steps.release.outputs.a--version }}
+        run: |
+          for i in $(seq 1 60); do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info")
+            if [ "$CODE" = "200" ]; then
+              echo "module available on proxy"
+              exit 0
+            fi
+            echo "waiting... ($i/60)"
+            sleep 30
+          done
+          echo "timeout waiting for proxy"
+          exit 1
+        timeout-minutes: 20
+
+  # Builds package b, next in tree, also des a commit to make sure
+  package-b:
+    needs:
+      - package-a
+      - merge-checker
+    if: needs.merge-checker.outputs.merge-commit == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: b/go.mod
+
+      # Check if we actually need to create a release
+      - uses: googleapis/release-please-action@v4
+        id: release-check
+        with:
+          path: b
+          skip-github-release: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Debug
+        run: |
+          echo "releases_created: ${{ steps.release-check.outputs.releases_created }}"
+          echo "paths_released: ${{ steps.release-check.outputs.paths_released }}"
+
+      # Commit with the newest version first
+      - name: Commit new version for a
+        if: steps.release-check.outputs.releases_created == 'true' && needs.package-a.outputs.version != ''
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          cd b
+          go get github.com/Unbreathable/staggerd/a@${{ needs.package-a.outputs.version }}
+          go mod tidy
+          git add go.mod go.sum
+          git commit -m "chore: upgrade a"
+          git pull --rebase origin ${{ github.head_ref || github.ref_name }}
+          git push origin HEAD:${{ github.head_ref || github.ref_name }}
+
+      # Then actually release b
+      - uses: googleapis/release-please-action@v4
+        if: steps.release-check.outputs.releases_created == 'true'
+        id: release
+        with:
+          path: b
+          token: ${{ secrets.GITHUB_TOKEN }}
