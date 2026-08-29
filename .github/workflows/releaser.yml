@@ -67,7 +67,19 @@ jobs:
           cd b
           go get github.com/Unbreathable/staggered/a@${{ needs.package-a.outputs.version }}
           go mod tidy
-          git add go.mod go.sum
+          cd ..
+          # Reset b's manifest entry to the latest released version of b
+          LATEST_B_TAG=$(git tag --list 'b/v*' --sort=-v:refname | head -n1)
+          LATEST_B_VERSION=${LATEST_B_TAG#b/v}
+          if [ -n "$LATEST_B_VERSION" ]; then
+            node -e "
+              const fs = require('fs');
+              const m = JSON.parse(fs.readFileSync('.release-please-manifest.json', 'utf8'));
+              m.b = '$LATEST_B_VERSION';
+              fs.writeFileSync('.release-please-manifest.json', JSON.stringify(m, null, '\t') + '\n');
+            "
+          fi
+          git add b/go.mod b/go.sum .release-please-manifest.json
           git commit -m "chore: upgrade a"
           git pull --rebase origin ${{ github.head_ref || github.ref_name }}
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
