@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.0](https://github.com/Unbreathable/staggered/compare/b/v1.4.0...b/v1.5.0) (2026-08-29)
+
+
+### Features
+
+* even more innovation ([2e97320](https://github.com/Unbreathable/staggered/commit/2e97320c32dea8cca2b634bbbee49a157554679a))
+* incredible innovation ([5d823b7](https://github.com/Unbreathable/staggered/commit/5d823b7c59d698f4d604fef43ae0752e10536639))
+* Release this bullshit ([22282b3](https://github.com/Unbreathable/staggered/commit/22282b3fac47687eaeccd1b4946be686bb1cea91))
+* Super important changes ([778e88d](https://github.com/Unbreathable/staggered/commit/778e88d4926b9cf7c7243c0633239ac92833707a))
+* Super important changes ([965d875](https://github.com/Unbreathable/staggered/commit/965d8759cea14a7cf1e75c47b9c0c9fd8fc85ba3))
+
 ## [1.4.0](https://github.com/Unbreathable/staggered/compare/b/v1.3.0...b/v1.4.0) (2026-08-29)
 
 
