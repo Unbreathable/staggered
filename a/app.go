@@ -1,5 +1,5 @@
 package a
 
 func SuperImportantValue() int {
-	return 67
+	return 69
 }
