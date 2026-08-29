@@ -65,7 +65,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           cd b
-          go get github.com/Unbreathable/staggered/a@${{ needs.package-a.outputs.version }}
+          go get github.com/Unbreathable/staggered/a@v${{ needs.package-a.outputs.version }}
           go mod tidy
           cd ..
           # Reset b's manifest entry to the latest released version of b
