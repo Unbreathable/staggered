@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Unbreathable/staggered/compare/a/v1.1.0...a/v1.2.0) (2026-08-29)
+
+
+### Features
+
+* Super important changes ([778e88d](https://github.com/Unbreathable/staggered/commit/778e88d4926b9cf7c7243c0633239ac92833707a))
+
 ## [1.1.0](https://github.com/Unbreathable/staggered/compare/a/v1.0.0...a/v1.1.0) (2026-08-29)
 
 
