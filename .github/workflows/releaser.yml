@@ -46,6 +46,7 @@ jobs:
 
       # Wait for the package to be available
       - name: Wait for module on Go proxy
+        if: steps.release.outputs.releases_created == 'true'
         env:
           MODULE: github.com/!unbreathable/staggered/a
           VERSION: ${{ steps.release.outputs.a--version }}
