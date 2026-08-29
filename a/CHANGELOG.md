@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/Unbreathable/staggered/compare/a/v1.5.0...a/v1.6.0) (2026-08-29)
+
+
+### Features
+
+* the biggest innovation in the world ([83077da](https://github.com/Unbreathable/staggered/commit/83077dab7f0898f4aef8ca7c72c563a06e568cdd))
+
 ## [1.5.0](https://github.com/Unbreathable/staggered/compare/a/v1.4.0...a/v1.5.0) (2026-08-29)
 
 
