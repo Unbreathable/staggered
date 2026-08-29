@@ -60,7 +60,7 @@ jobs:
 
       # Commit with the newest version first
       - name: Commit new version for a
-        if: steps.release-check.outputs.releases_created == 'true' && needs.package-a.outputs.version != ''
+        if: needs.package-a.outputs.version != ''
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
