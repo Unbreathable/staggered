@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/Unbreathable/staggered/compare/a/v1.7.0...a/v1.8.0) (2026-08-29)
+
+
+### Features
+
+* more incredible innovation ([4bfffc5](https://github.com/Unbreathable/staggered/commit/4bfffc5d8454912f2e30407939bd10511e703bbb))
+
 ## [1.7.0](https://github.com/Unbreathable/staggered/compare/a/v1.6.0...a/v1.7.0) (2026-08-29)
 
 
