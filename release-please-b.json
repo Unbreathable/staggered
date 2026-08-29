@@ -1,0 +1,10 @@
+{
+	"tag-separator": "/",
+	"packages": {
+		"b": {
+			"release-type": "go",
+			"include-v-in-tag": true,
+			"component": "b"
+		}
+	}
+}

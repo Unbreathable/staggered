@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println("Super important value:", a.SuperImportantValue())
+	fmt.Println("Super important:", a.SuperImportantValue())
 }
