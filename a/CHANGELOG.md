@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/Unbreathable/staggered/compare/a/v1.9.0...a/v1.10.0) (2026-08-29)
+
+
+### Features
+
+* crazy innovation ahead ([ea36a6c](https://github.com/Unbreathable/staggered/commit/ea36a6c1ddafd40ba461c3ac9db5a53ab7b437f0))
+
 ## [1.9.0](https://github.com/Unbreathable/staggered/compare/a/v1.8.0...a/v1.9.0) (2026-08-29)
 
 
