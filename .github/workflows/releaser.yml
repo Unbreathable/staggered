@@ -10,62 +10,37 @@ permissions:
   pull-requests: write
 
 jobs:
-  merge-checker:
+  releaser:
+    if: startsWith(github.event.head_commit.message, 'Merge pull request')
     runs-on: ubuntu-latest
     outputs:
-      merge-commit: ${{ steps.merge-commit.outputs.result }}
+      version: ${{ steps.release-a.outputs.a--version }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-      - name: Detect if merge commit
-        id: merge-commit
-        run: |
-          MSG=$(git log -1 --pretty=%s)
-          if [[ "$MSG" =~ ^Merge\ pull\ request ]]; then
-            echo "result=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "result=false" >> "$GITHUB_OUTPUT"
-          fi
-
-  # Builds package a, first thing in tree
-  package-a:
-    needs: merge-checker
-    if: needs.merge-checker.outputs.merge-commit == 'true'
-    outputs:
-      releases-created: ${{ steps.release.outputs.releases_created }}
-      version: ${{ steps.release.outputs.a--version }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
+      # Release a (release-please consumes the autorelease labels on the
+      # merged release PR, so b can't be released by a second invocation)
       - uses: googleapis/release-please-action@v4
-        id: release
+        id: release-a
         with:
           config-file: release-please-a.json
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Builds package b, next in tree, also des a commit to make sure
-  package-b:
-    needs:
-      - package-a
-      - merge-checker
-    if: needs.merge-checker.outputs.merge-commit == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
       - uses: actions/setup-go@v7
+        if: steps.release-a.outputs.a--version != ''
         with:
           go-version-file: b/go.mod
 
       # Commit with the newest version first
       - name: Commit new version for a
-        if: needs.package-a.outputs.version != ''
+        if: steps.release-a.outputs.a--version != ''
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           cd b
-          go get github.com/Unbreathable/staggered/a@v${{ needs.package-a.outputs.version }}
+          go get github.com/Unbreathable/staggered/a@v${{ steps.release-a.outputs.a--version }}
           go mod tidy
           cd ..
           git add b/go.mod b/go.sum
@@ -73,9 +48,21 @@ jobs:
           git pull --rebase origin ${{ github.head_ref || github.ref_name }}
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
 
-      # Then actually release b
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          config-file: release-please-b.json
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # a's release-please run already consumed the autorelease labels, so
+      # release-please can't detect the merged release PR for b anymore.
+      # Do what it would have done manually: tag + GitHub release from CHANGELOG.
+      - name: Release b
+        if: steps.release-a.outputs.a--version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_B=$(jq -r .b .release-please-manifest.json)
+          if gh release view "b/v$NEW_B" >/dev/null 2>&1; then
+            echo "b/v$NEW_B already released, skipping"
+            exit 0
+          fi
+          # Extract the NEW_B section from b's CHANGELOG as release notes
+          NOTES=$(awk -v v="$NEW_B" 'BEGIN{p=0} /^## \[?'"$NEW_B"'\]?\]?/{p=1; next} p && /^## /{exit} p{print}' b/CHANGELOG.md | sed '/./,$!d')
+          git tag "b/v$NEW_B"
+          git push origin "b/v$NEW_B"
+          gh release create "b/v$NEW_B" --title "b/v$NEW_B" --notes "$NOTES" --latest
